@@ -1,18 +1,163 @@
-<!DOCTYPE html>
+# Create a simple two-page static site (Polish + English) with basic contact info.
+# Files: index.html (PL), index-en.html (EN), style.css, assets (favicon placeholder).
+# Package them into a ZIP for download.
+
+import os, textwrap, zipfile, json, pathlib
+
+root = "/mnt/data/siwiutki_cleaning_site"
+os.makedirs(root, exist_ok=True)
+
+style_css = """
+*{box-sizing:border-box}html{font-size:16px}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;line-height:1.6;color:#0f172a;background:#f8fafc}
+header{background:#0b132b;color:#fff;padding:28px 16px}
+.container{max-width:980px;margin:0 auto;padding:0 16px}
+h1{font-size:2rem;margin:0 0 8px}
+h2{font-size:1.25rem;margin:18px 0 8px;color:#0b132b}
+p{margin:0 0 12px}
+.badge{display:inline-block;background:#3a86ff;color:#fff;padding:4px 10px;border-radius:999px;font-size:.85rem;margin-top:6px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 2px 8px rgba(2,6,23,.06)}
+.grid{display:grid;gap:14px}
+@media(min-width:768px){.grid{grid-template-columns:2fr 1fr}}
+.cta{display:inline-block;background:#3a86ff;color:#fff;text-decoration:none;padding:12px 16px;border-radius:10px;font-weight:600}
+footer{padding:20px 16px;color:#475569}
+nav a{color:#fff;opacity:.9;margin-right:12px;text-decoration:none}
+nav a:hover{opacity:1;text-decoration:underline}
+.list{padding-left:18px}
+.small{font-size:.9rem;color:#334155}
+.kvk{font-variant-numeric:tabular-nums}
+"""
+
+index_pl = """
+<!doctype html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JR Cleaning NL</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background: #f0f0f0; }
-    h1 { color: #0078d7; }
-    p { color: #333; font-size: 18px; }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>J&R Services Cleaning – Sprzątanie w Eindhoven i okolicach</title>
+  <meta name="description" content="Profesjonalne sprzątanie mieszkań, domów i biur w Eindhoven i okolicach. Szybki kontakt: 06 2725 2195 (WhatsApp).">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Witamy w JR Cleaning NL</h1>
-  <p>Profesjonalne sprzątanie, czystość gwarantowana.</p>
-  <p>Kontakt: <strong>+31 6 123 456 78</strong> | <a href="mailto:biuro@jrcleaning.nl">biuro@jrcleaning.nl</a></p>
+<header>
+  <div class="container">
+    <h1>J&amp;R Services Cleaning</h1>
+    <div class="badge">Profesjonalne sprzątanie – Eindhoven i okolice</div>
+    <nav>
+      <a href="index.html">PL</a>
+      <a href="index-en.html" rel="alternate" hreflang="en">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container grid">
+  <section class="card">
+    <h2>Co robimy</h2>
+    <ul class="list">
+      <li>Sprzątanie mieszkań, domów i biur</li>
+      <li>Mycie okien, odkurzanie, mopowanie</li>
+      <li>Czyszczenie kuchni i łazienek</li>
+      <li>Porządki po remoncie</li>
+    </ul>
+    <p class="small">Działamy szybko, dokładnie i bez zbędnych formalności.</p>
+  </section>
+
+  <aside class="card">
+    <h2>Kontakt</h2>
+    <p><strong>Telefon / WhatsApp:</strong> <a href="https://wa.me/31627252195">06 2725 2195</a></p>
+    <p><strong>Miasto:</strong> Eindhoven, NL</p>
+    <p class="kvk"><strong>KvK:</strong> 98542257</p>
+    <p><a class="cta" href="https://wa.me/31627252195">Napisz na WhatsApp</a></p>
+  </aside>
+
+  <section class="card" style="grid-column:1/-1">
+    <h2>Dlaczego my</h2>
+    <p>Jesteśmy punktualni, szanujemy czas i budżet klienta. Pracujemy na sprawdzonych środkach i sprzęcie. Umawiamy się jasno: zakres, cena, termin.</p>
+  </section>
+
+  <section class="card" style="grid-column:1/-1">
+    <h2>Informacje prawne</h2>
+    <p class="small">Administratorem danych jest J&amp;R Services Cleaning. Dane kontaktowe wykorzystujemy tylko do obsługi zapytań. Na tej stronie nie zbieramy ciasteczek śledzących.</p>
+  </section>
+</main>
+
+<footer class="container small">
+  <p>&copy; <span id="y"></span> J&amp;R Services Cleaning. All rights reserved.</p>
+</footer>
+<script>document.getElementById('y').textContent=new Date().getFullYear()</script>
 </body>
 </html>
+"""
+
+index_en = """
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>J&R Services Cleaning – Professional cleaning in Eindhoven</title>
+  <meta name="description" content="Professional cleaning for homes and offices in Eindhoven. Quick contact: +31 6 2725 2195 (WhatsApp).">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>J&amp;R Services Cleaning</h1>
+    <div class="badge">Professional cleaning – Eindhoven area</div>
+    <nav>
+      <a href="index.html" rel="alternate" hreflang="pl">PL</a>
+      <a href="index-en.html">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container grid">
+  <section class="card">
+    <h2>What we do</h2>
+    <ul class="list">
+      <li>Home, apartment and office cleaning</li>
+      <li>Windows, vacuuming, mopping</li>
+      <li>Kitchen and bathroom deep clean</li>
+      <li>Post‑renovation cleanup</li>
+    </ul>
+    <p class="small">Fast, thorough, no hassle.</p>
+  </section>
+
+  <aside class="card">
+    <h2>Contact</h2>
+    <p><strong>Phone / WhatsApp:</strong> <a href="https://wa.me/31627252195">+31 6 2725 2195</a></p>
+    <p><strong>City:</strong> Eindhoven, NL</p>
+    <p class="kvk"><strong>KvK:</strong> 98542257</p>
+    <p><a class="cta" href="https://wa.me/31627252195">Message on WhatsApp</a></p>
+  </aside>
+
+  <section class="card" style="grid-column:1/-1">
+    <h2>Why us</h2>
+    <p>On time, transparent pricing, and reliable results. We use proven products and agree scope, price and date upfront.</p>
+  </section>
+
+  <section class="card" style="grid-column:1/-1">
+    <h2>Privacy</h2>
+    <p class="small">We only use your contact details to respond to your inquiry. No tracking cookies on this site.</p>
+  </section>
+</main>
+
+<footer class="container small">
+  <p>&copy; <span id="y"></span> J&amp;R Services Cleaning. All rights reserved.</p>
+</footer>
+<script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+</body>
+</html>
+"""
+
+# Write files
+open(os.path.join(root, "style.css"), "w", encoding="utf-8").write(style_css.strip())
+open(os.path.join(root, "index.html"), "w", encoding="utf-8").write(index_pl.strip())
+open(os.path.join(root, "index-en.html"), "w", encoding="utf-8").write(index_en.strip())
+
+# Zip it
+zip_path = "/mnt/data/jr_cleaning_basic_site.zip"
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+    for fname in ["index.html", "index-en.html", "style.css"]:
+        z.write(os.path.join(root, fname), arcname=fname)
+
+zip_path
